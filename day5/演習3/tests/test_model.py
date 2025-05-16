@@ -77,7 +77,7 @@ def preprocessor():
 @pytest.fixture
 def old_train_model():
     old_model = None
-    if not os.path.exists(MODEL_PATH):
+    if os.path.exists(MODEL_PATH):
         with open(MODEL_PATH, "rb") as f:
             old_model = pickle.load(f)
     return old_model
