@@ -16,6 +16,7 @@ from sklearn.pipeline import Pipeline
 DATA_PATH = os.path.join(os.path.dirname(__file__), "../data/Titanic.csv")
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "../models")
 MODEL_PATH = os.path.join(MODEL_DIR, "titanic_model.pkl")
+OLD_MODEL_PATH = os.path.join(MODEL_DIR, "titanic_model_old.pkl")
 
 
 @pytest.fixture
@@ -77,8 +78,8 @@ def preprocessor():
 @pytest.fixture
 def old_train_model():
     old_model = None
-    if os.path.exists(MODEL_PATH):
-        with open(MODEL_PATH, "rb") as f:
+    if os.path.exists(OLD_MODEL_PATH):
+        with open(OLD_MODEL_PATH, "rb") as f:
             old_model = pickle.load(f)
     return old_model, None, None
 
@@ -106,6 +107,10 @@ def train_model(sample_data, preprocessor):
 
     # モデルの保存
     os.makedirs(MODEL_DIR, exist_ok=True)
+    # 過去のモデルが存在する場合はファイル名を変更
+    if os.path.exists(MODEL_PATH):
+        os.rename(MODEL_PATH, OLD_MODEL_PATH)
+    # 現在のモデルを保存
     with open(MODEL_PATH, "wb") as f:
         pickle.dump(model, f)
 
