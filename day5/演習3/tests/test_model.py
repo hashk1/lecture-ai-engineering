@@ -144,7 +144,9 @@ def test_model_accuracy_comparison(train_model, old_train_model):
     accuracy_old = accuracy_score(y_test, y_pred_old)
 
     # 現在のモデルが過去のモデルよりも0.1以上下がっていた場合は警告
-    assert accuracy >= accuracy_old - 0.1, f"現在のモデルの精度が過去のモデルよりも低すぎます: {accuracy} < {accuracy_old}"
+    assert (
+        accuracy >= accuracy_old - 0.1
+    ), f"現在のモデルの精度が過去のモデルよりも低すぎます: {accuracy} < {accuracy_old}"
 
 
 def test_model_inference_time(train_model):
