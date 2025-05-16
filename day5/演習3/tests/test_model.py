@@ -80,7 +80,7 @@ def old_train_model():
     if os.path.exists(MODEL_PATH):
         with open(MODEL_PATH, "rb") as f:
             old_model = pickle.load(f)
-    return old_model
+    return old_model, None, None
 
 
 @pytest.fixture
