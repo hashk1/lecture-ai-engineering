@@ -16,6 +16,7 @@ from sklearn.pipeline import Pipeline
 DATA_PATH = os.path.join(os.path.dirname(__file__), "../data/Titanic.csv")
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "../models")
 MODEL_PATH = os.path.join(MODEL_DIR, "titanic_model.pkl")
+OLD_MODEL_PATH = os.path.join(MODEL_DIR, "titanic_model_old.pkl")
 
 
 @pytest.fixture
@@ -96,10 +97,24 @@ def train_model(sample_data, preprocessor):
 
     # モデルの保存
     os.makedirs(MODEL_DIR, exist_ok=True)
+    # 過去のモデルが存在する場合はファイル名を変更
+    if os.path.exists(MODEL_PATH):
+        os.rename(MODEL_PATH, OLD_MODEL_PATH)
+    # 現在のモデルを保存
     with open(MODEL_PATH, "wb") as f:
         pickle.dump(model, f)
 
     return model, X_test, y_test
+
+
+# 過去のモデルファイルがあれば読み込んでおく
+@pytest.fixture
+def old_train_model():
+    old_model = None
+    if os.path.exists(OLD_MODEL_PATH):
+        with open(OLD_MODEL_PATH, "rb") as f:
+            old_model = pickle.load(f)
+    return old_model, None, None
 
 
 def test_model_exists():
@@ -119,6 +134,28 @@ def test_model_accuracy(train_model):
 
     # Titanicデータセットでは0.75以上の精度が一般的に良いとされる
     assert accuracy >= 0.75, f"モデルの精度が低すぎます: {accuracy}"
+
+
+def test_model_accuracy_comparison(train_model, old_train_model):
+    """過去のモデルが存在するか確認"""
+    if old_train_model[0] is None:
+        pytest.skip("過去のモデルが存在しないためスキップします")
+
+    model, X_test, y_test = train_model
+    old_model, _, _ = old_train_model
+
+    # 現在のモデルの精度を計算
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+
+    # 過去のモデルの精度を計算
+    y_pred_old = old_model.predict(X_test)
+    accuracy_old = accuracy_score(y_test, y_pred_old)
+
+    # 現在のモデルが過去のモデルよりも0.1以上下がっていた場合は警告
+    assert (
+        accuracy >= accuracy_old - 0.1
+    ), f"現在のモデルの精度が過去のモデルよりも低すぎます: {accuracy} < {accuracy_old}"
 
 
 def test_model_inference_time(train_model):
