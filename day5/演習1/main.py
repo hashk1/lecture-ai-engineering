@@ -10,7 +10,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import LabelEncoder
 from mlflow.models.signature import infer_signature
-
+import time
 
 # データ準備
 def prepare_data(test_size=0.2, random_state=42):
@@ -46,14 +46,19 @@ def train_and_evaluate(
     model = RandomForestClassifier(
         n_estimators=n_estimators, max_depth=max_depth, random_state=random_state
     )
+    # 推論時間を計測
+    start_time = time.time()
     model.fit(X_train, y_train)
+    end_time = time.time()
+
     predictions = model.predict(X_test)
     accuracy = accuracy_score(y_test, predictions)
-    return model, accuracy
+    inference_time = end_time - start_time
+    return model, accuracy, inference_time
 
 
 # モデル保存
-def log_model(model, accuracy, params):
+def log_model(model, accuracy, inference_time, params):
     with mlflow.start_run():
         # パラメータをログ
         for param_name, param_value in params.items():
@@ -61,6 +66,7 @@ def log_model(model, accuracy, params):
 
         # メトリクスをログ
         mlflow.log_metric("accuracy", accuracy)
+        mlflow.log_metric("inference_time", inference_time) # 推論時間を追加する
 
         # モデルのシグネチャを推論
         signature = infer_signature(X_train, model.predict(X_train))
@@ -73,7 +79,7 @@ def log_model(model, accuracy, params):
             input_example=X_test.iloc[:5],  # 入力例を指定
         )
         # accurecyとparmsは改行して表示
-        print(f"モデルのログ記録値 \naccuracy: {accuracy}\nparams: {params}")
+        print(f"モデルのログ記録値 \naccuracy: {accuracy}\ninference_time: {inference_time} sec\nparams: {params}")
 
 
 # メイン処理
@@ -102,7 +108,7 @@ if __name__ == "__main__":
     )
 
     # 学習と評価
-    model, accuracy = train_and_evaluate(
+    model, accuracy, inference_time = train_and_evaluate(
         X_train,
         X_test,
         y_train,
@@ -113,7 +119,7 @@ if __name__ == "__main__":
     )
 
     # モデル保存
-    log_model(model, accuracy, params)
+    log_model(model, accuracy, inference_time, params)
 
     model_dir = "models"
     os.makedirs(model_dir, exist_ok=True)
