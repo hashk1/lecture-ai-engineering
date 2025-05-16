@@ -74,16 +74,6 @@ def preprocessor():
     return preprocessor
 
 
-# 過去のモデルファイルがあれば読み込んでおく
-@pytest.fixture
-def old_train_model():
-    old_model = None
-    if os.path.exists(OLD_MODEL_PATH):
-        with open(OLD_MODEL_PATH, "rb") as f:
-            old_model = pickle.load(f)
-    return old_model, None, None
-
-
 @pytest.fixture
 def train_model(sample_data, preprocessor):
     """モデルの学習とテストデータの準備"""
@@ -116,6 +106,14 @@ def train_model(sample_data, preprocessor):
 
     return model, X_test, y_test
 
+# 過去のモデルファイルがあれば読み込んでおく
+@pytest.fixture
+def old_train_model():
+    old_model = None
+    if os.path.exists(OLD_MODEL_PATH):
+        with open(OLD_MODEL_PATH, "rb") as f:
+            old_model = pickle.load(f)
+    return old_model, None, None
 
 def test_model_exists():
     """モデルファイルが存在するか確認"""
@@ -136,10 +134,10 @@ def test_model_accuracy(train_model):
     assert accuracy >= 0.75, f"モデルの精度が低すぎます: {accuracy}"
 
 
-def test_model_accuracy_comparison(old_train_model, train_model):
+def test_model_accuracy_comparison(train_model, old_train_model):
     """過去のモデルが存在するか確認"""
-    if old_train_model is None:
-        pytest.skip("過去のモデルが存在しないためスキップします")
+    if old_train_model[0] is None:
+        pytest.skip("過去のモデルが存在しないためスキップします")  
 
     model, X_test, y_test = train_model
     old_model, _, _ = old_train_model
