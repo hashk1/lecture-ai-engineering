@@ -17,6 +17,7 @@ DATA_PATH = os.path.join(os.path.dirname(__file__), "../data/Titanic.csv")
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "../models")
 MODEL_PATH = os.path.join(MODEL_DIR, "titanic_model.pkl")
 
+
 @pytest.fixture
 def sample_data():
     """テスト用データセットを読み込む"""
@@ -80,6 +81,7 @@ def old_train_model():
         with open(MODEL_PATH, "rb") as f:
             old_model = pickle.load(f)
     return old_model
+
 
 @pytest.fixture
 def train_model(sample_data, preprocessor):
