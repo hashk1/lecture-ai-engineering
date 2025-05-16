@@ -41,7 +41,11 @@ def prepare_data(test_size=0.2, random_state=42):
 
 # 学習と評価
 def train_and_evaluate(
-    X_train, X_test, y_train, y_test, n_estimators=100, max_depth=None, random_state=42
+    X_train, X_test, y_train, y_test, 
+    n_estimators=100, max_depth=None, 
+    min_samples_split=2, min_samples_leaf=1, 
+    max_features="sqrt", bootstrap=True,
+    random_state=42
 ):
     model = RandomForestClassifier(
         n_estimators=n_estimators, max_depth=max_depth, random_state=random_state
@@ -92,6 +96,11 @@ if __name__ == "__main__":
     model_random_state = random.randint(1, 100)
     n_estimators = random.randint(50, 200)
     max_depth = random.choice([None, 3, 5, 10, 15])
+    min_samples_split = random.choice([2, 5, 10])
+    min_samples_leaf = random.choice([1, 2, 5])
+    max_features = random.choice([None, "sqrt", "log2"])
+    bootstrap = random.choice([True, False])
+    
 
     # パラメータ辞書の作成
     params = {
@@ -100,6 +109,10 @@ if __name__ == "__main__":
         "model_random_state": model_random_state,
         "n_estimators": n_estimators,
         "max_depth": "None" if max_depth is None else max_depth,
+        "min_samples_split": min_samples_split,
+        "min_samples_leaf": min_samples_leaf,
+        "max_features": max_features,
+        "bootstrap": bootstrap,
     }
 
     # データ準備
@@ -115,6 +128,10 @@ if __name__ == "__main__":
         y_test,
         n_estimators=n_estimators,
         max_depth=max_depth,
+        min_samples_split=min_samples_split,
+        min_samples_leaf=min_samples_leaf,
+        max_features=max_features,
+        bootstrap=bootstrap,
         random_state=model_random_state,
     )
 
