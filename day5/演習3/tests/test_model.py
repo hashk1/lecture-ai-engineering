@@ -17,13 +17,6 @@ DATA_PATH = os.path.join(os.path.dirname(__file__), "../data/Titanic.csv")
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "../models")
 MODEL_PATH = os.path.join(MODEL_DIR, "titanic_model.pkl")
 
-# 過去のモデルファイルがある場合は読み込んでおく
-old_train_model = None
-if not os.path.exists(MODEL_PATH):
-    with open(MODEL_PATH, "rb") as f:
-        old_train_model = pickle.load(f)
-
-
 @pytest.fixture
 def sample_data():
     """テスト用データセットを読み込む"""
@@ -79,6 +72,15 @@ def preprocessor():
     return preprocessor
 
 
+# 過去のモデルファイルがあれば読み込んでおく
+@pytest.fixture
+def old_train_model():
+    old_model = None
+    if not os.path.exists(MODEL_PATH):
+        with open(MODEL_PATH, "rb") as f:
+            old_model = pickle.load(f)
+    return old_model
+
 @pytest.fixture
 def train_model(sample_data, preprocessor):
     """モデルの学習とテストデータの準備"""
@@ -127,7 +129,7 @@ def test_model_accuracy(train_model):
     assert accuracy >= 0.75, f"モデルの精度が低すぎます: {accuracy}"
 
 
-def test_model_accuracy_comparison(train_model, old_train_model):
+def test_model_accuracy_comparison(old_train_model, train_model):
     """過去のモデルが存在するか確認"""
     if old_train_model is None:
         pytest.skip("過去のモデルが存在しないためスキップします")
